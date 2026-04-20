@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Echuu Local LiveKit Test</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f0e8;
+      --panel: #fffdf8;
+      --line: #d4c8b8;
+      --text: #1f1b16;
+      --muted: #6a6258;
+      --accent: #0f766e;
+      --accent-2: #134e4a;
+      --danger: #b42318;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 28%),
+        linear-gradient(180deg, #efe7da 0%, var(--bg) 45%, #ece7df 100%);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .hero {
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1.05;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: color-mix(in srgb, var(--panel) 92%, white);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      box-shadow: 0 12px 40px rgba(31, 27, 22, 0.08);
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 18px;
+    }
+
+    .field {
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .field input,
+    .field textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .field textarea {
+      min-height: 160px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 16px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease, background 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .secondary {
+      background: #e7e0d4;
+      color: var(--text);
+    }
+
+    .danger {
+      background: #fbe9e7;
+      color: var(--danger);
+    }
+
+    .status-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .panel-title {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .box {
+      min-height: 190px;
+      max-height: 280px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .log-line,
+    .participant-line,
+    .chat-line {
+      font-size: 14px;
+      line-height: 1.45;
+      padding: 6px 0;
+      border-bottom: 1px dashed rgba(106, 98, 88, 0.18);
+      word-break: break-word;
+    }
+
+    .log-line:last-child,
+    .participant-line:last-child,
+    .chat-line:last-child {
+      border-bottom: 0;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    @media (max-width: 860px) {
+      .grid,
+      .columns {
+        grid-template-columns: 1fr;
+      }
+
+      .page {
+        padding: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="hero">
+      <h1>Local LiveKit Test</h1>
+      <p>用这个页面连接你本机的 LiveKit，验证 agent 自动进房、参与者变化和文本消息回流。</p>
+    </div>
+
+    <div class="grid">
+      <section class="card">
+        <h2>Connection</h2>
+        <div class="field">
+          <label for="serverUrl">Server URL</label>
+          <input id="serverUrl" value="ws://127.0.0.1:7880">
+        </div>
+        <div class="field">
+          <label for="token">Token</label>
+          <textarea id="token" placeholder="粘贴你生成的 LiveKit token"></textarea>
+        </div>
+        <div class="actions">
+          <button id="connectBtn" class="primary">Connect</button>
+          <button id="disconnectBtn" class="secondary" disabled>Disconnect</button>
+          <button id="micBtn" class="secondary" disabled>Enable Mic</button>
+        </div>
+
+        <h2 style="margin-top: 20px;">Chat</h2>
+        <div class="field">
+          <label for="message">Text Message</label>
+          <textarea id="message" placeholder="输入文本后发送给房间里的 agent"></textarea>
+        </div>
+        <div class="actions">
+          <button id="sendBtn" class="primary" disabled>Send Message</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="status-bar">
+          <div class="pill">Connection: <strong id="connectionState">disconnected</strong></div>
+          <div class="pill">Participants: <strong id="participantCount">0</strong></div>
+          <div class="pill">Room: <strong id="roomName">-</strong></div>
+          <div class="pill">Audio Unlock: <strong id="audioUnlocked">no</strong></div>
+        </div>
+
+        <div class="columns">
+          <div>
+            <div class="panel-title">Participants</div>
+            <div id="participants" class="box"></div>
+          </div>
+          <div>
+            <div class="panel-title">Chat / Data</div>
+            <div id="chat" class="box"></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <div class="panel-title">Logs</div>
+          <div id="logs" class="box"></div>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <div class="panel-title">Remote Audio</div>
+          <div id="audioStatus" class="box">
+            <div class="muted">等待远端音频轨道发布。</div>
+          </div>
+          <div id="audioContainer"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script type="module">
+    import {
+      Room,
+      RoomEvent,
+      ConnectionState,
+    } from "https://cdn.jsdelivr.net/npm/livekit-client@2.15.4/dist/livekit-client.esm.mjs";
+
+    const elements = {
+      serverUrl: document.getElementById("serverUrl"),
+      token: document.getElementById("token"),
+      message: document.getElementById("message"),
+      connectBtn: document.getElementById("connectBtn"),
+      disconnectBtn: document.getElementById("disconnectBtn"),
+      micBtn: document.getElementById("micBtn"),
+      sendBtn: document.getElementById("sendBtn"),
+      connectionState: document.getElementById("connectionState"),
+      participantCount: document.getElementById("participantCount"),
+      roomName: document.getElementById("roomName"),
+      audioUnlocked: document.getElementById("audioUnlocked"),
+      participants: document.getElementById("participants"),
+      logs: document.getElementById("logs"),
+      chat: document.getElementById("chat"),
+      audioStatus: document.getElementById("audioStatus"),
+      audioContainer: document.getElementById("audioContainer"),
+    };
+
+    let room = null;
+    const audioElements = new Map();
+    let audioUnlocked = false;
+
+    function appendLine(container, text, className) {
+      const line = document.createElement("div");
+      line.className = className;
+      line.textContent = `[${new Date().toLocaleTimeString()}] ${text}`;
+      container.prepend(line);
+    }
+
+    function log(text) {
+      appendLine(elements.logs, text, "log-line");
+    }
+
+    function chat(text) {
+      appendLine(elements.chat, text, "chat-line");
+    }
+
+    function renderParticipants() {
+      elements.participants.innerHTML = "";
+
+      if (!room || room.state === ConnectionState.Disconnected) {
+        elements.participantCount.textContent = "0";
+        return;
+      }
+
+      const participants = [
+        {
+          identity: room.localParticipant.identity || "(local)",
+          isLocal: true,
+          metadata: room.localParticipant.metadata,
+          attributes: room.localParticipant.attributes,
+        },
+        ...Array.from(room.remoteParticipants.values()).map((participant) => ({
+          identity: participant.identity,
+          isLocal: false,
+          metadata: participant.metadata,
+          attributes: participant.attributes,
+        })),
+      ];
+
+      elements.participantCount.textContent = String(participants.length);
+
+      for (const participant of participants) {
+        const row = document.createElement("div");
+        row.className = "participant-line";
+        const state = participant.attributes?.lk_agent_state || participant.attributes?.agent_state;
+        row.innerHTML = `
+          <strong>${participant.identity}</strong>
+          <span class="muted">${participant.isLocal ? " (you)" : ""}</span>
+          ${state ? `<div class="muted">state: ${state}</div>` : ""}
+        `;
+        elements.participants.appendChild(row);
+      }
+    }
+
+    function renderAudioStatus(lines) {
+      elements.audioStatus.innerHTML = "";
+      for (const text of lines) {
+        const row = document.createElement("div");
+        row.className = "participant-line";
+        row.textContent = text;
+        elements.audioStatus.appendChild(row);
+      }
+    }
+
+    async function unlockAudioPlayback() {
+      if (audioUnlocked) {
+        return;
+      }
+
+      audioUnlocked = true;
+      elements.audioUnlocked.textContent = "yes";
+      log("audio playback unlocked by user interaction");
+    }
+
+    async function tryPlayAudioElement(audio, label) {
+      audio.muted = false;
+      audio.volume = 1;
+
+      try {
+        const playResult = audio.play();
+        if (playResult?.then) {
+          await playResult;
+        }
+        log(`audio play started: ${label}`);
+      } catch (error) {
+        log(`audio play failed: ${label} -> ${error?.message || error}`);
+      }
+    }
+
+    function syncAudioElements() {
+      if (!room || room.state === ConnectionState.Disconnected) {
+        for (const element of audioElements.values()) {
+          element.remove();
+        }
+        audioElements.clear();
+        renderAudioStatus(["等待远端音频轨道发布。"]);
+        return;
+      }
+
+      const remoteAudioTracks = [];
+      for (const participant of room.remoteParticipants.values()) {
+        for (const publication of participant.audioTrackPublications.values()) {
+          if (publication.track) {
+            remoteAudioTracks.push({
+              participantIdentity: participant.identity,
+              trackSid: publication.trackSid,
+              track: publication.track,
+            });
+          }
+        }
+      }
+
+      const activeKeys = new Set(remoteAudioTracks.map((item) => `${item.participantIdentity}:${item.trackSid}`));
+
+      for (const [key, element] of audioElements.entries()) {
+        if (!activeKeys.has(key)) {
+          element.remove();
+          audioElements.delete(key);
+        }
+      }
+
+      for (const item of remoteAudioTracks) {
+        const key = `${item.participantIdentity}:${item.trackSid}`;
+        if (audioElements.has(key)) {
+          continue;
+        }
+
+        const audio = item.track.attach();
+        audio.autoplay = true;
+        audio.controls = true;
+        audio.style.width = "100%";
+        audio.dataset.participantIdentity = item.participantIdentity;
+        elements.audioContainer.appendChild(audio);
+        audioElements.set(key, audio);
+        log(`attached remote audio: ${item.participantIdentity}`);
+        audio.addEventListener("play", () => log(`audio element play event: ${item.participantIdentity}`));
+        audio.addEventListener("pause", () => log(`audio element pause event: ${item.participantIdentity}`));
+        audio.addEventListener("volumechange", () => {
+          log(`audio volume change: ${item.participantIdentity} muted=${audio.muted} volume=${audio.volume}`);
+        });
+        audio.addEventListener("error", () => {
+          const mediaError = audio.error;
+          log(`audio element error: ${item.participantIdentity} code=${mediaError?.code ?? "unknown"}`);
+        });
+        void tryPlayAudioElement(audio, item.participantIdentity);
+      }
+
+      if (remoteAudioTracks.length === 0) {
+        renderAudioStatus(["等待远端音频轨道发布。"]);
+      } else {
+        renderAudioStatus(remoteAudioTracks.map((item) => `remote audio from ${item.participantIdentity}`));
+      }
+    }
+
+    function updateUi() {
+      const connected = !!room && room.state !== ConnectionState.Disconnected;
+      elements.connectionState.textContent = room ? room.state : "disconnected";
+      elements.roomName.textContent = room?.name || "-";
+      elements.audioUnlocked.textContent = audioUnlocked ? "yes" : "no";
+      elements.connectBtn.disabled = connected;
+      elements.disconnectBtn.disabled = !connected;
+      elements.micBtn.disabled = !connected;
+      elements.sendBtn.disabled = !connected;
+      renderParticipants();
+    }
+
+    async function connectRoom() {
+      await unlockAudioPlayback();
+
+      if (room) {
+        await disconnectRoom();
+      }
+
+      const serverUrl = elements.serverUrl.value.trim();
+      const token = elements.token.value.trim();
+
+      if (!serverUrl || !token) {
+        log("server URL 和 token 都要填。");
+        return;
+      }
+
+      room = new Room();
+      updateUi();
+
+      room.on(RoomEvent.ConnectionStateChanged, (state) => {
+        log(`connection state -> ${state}`);
+        updateUi();
+      });
+
+      room.on(RoomEvent.ParticipantConnected, (participant) => {
+        log(`participant connected: ${participant.identity}`);
+        renderParticipants();
+        syncAudioElements();
+      });
+
+      room.on(RoomEvent.ParticipantDisconnected, (participant) => {
+        log(`participant disconnected: ${participant.identity}`);
+        renderParticipants();
+        syncAudioElements();
+      });
+
+      room.on(RoomEvent.ParticipantAttributesChanged, () => {
+        renderParticipants();
+      });
+
+      room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+        log(`track subscribed: ${participant.identity} (${publication.kind})`);
+        syncAudioElements();
+      });
+
+      room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+        log(`track unsubscribed: ${participant.identity} (${publication.kind})`);
+        syncAudioElements();
+      });
+
+      room.on(RoomEvent.DataReceived, (payload, participant, kind, topic) => {
+        const text = new TextDecoder().decode(payload);
+        chat(`data from ${participant?.identity || "unknown"} topic=${topic || "-"} kind=${kind}: ${text}`);
+      });
+
+      room.registerTextStreamHandler("lk.chat", async (reader, participantIdentity) => {
+        const chunks = [];
+        for await (const chunk of reader) {
+          if (typeof chunk === "string") {
+            chunks.push(chunk);
+          } else if (chunk?.text) {
+            chunks.push(chunk.text);
+          }
+        }
+        const text = chunks.join("").trim();
+        chat(`text from ${participantIdentity}: ${text || "(empty)"}`);
+      });
+
+      try {
+        log(`connecting to ${serverUrl} ...`);
+        await room.connect(serverUrl, token);
+        log(`connected to room ${room.name}`);
+        updateUi();
+        syncAudioElements();
+      } catch (error) {
+        log(`connect failed: ${error?.message || error}`);
+        await disconnectRoom();
+      }
+    }
+
+    async function disconnectRoom() {
+      if (!room) {
+        return;
+      }
+
+      try {
+        await room.disconnect();
+      } catch (error) {
+        log(`disconnect failed: ${error?.message || error}`);
+      } finally {
+        room = null;
+        updateUi();
+        syncAudioElements();
+      }
+    }
+
+    async function enableMic() {
+      if (!room) {
+        return;
+      }
+
+      try {
+        await unlockAudioPlayback();
+        await room.localParticipant.setMicrophoneEnabled(true);
+        log("microphone enabled");
+      } catch (error) {
+        log(`enable microphone failed: ${error?.message || error}`);
+      }
+    }
+
+    async function sendMessage() {
+      if (!room) {
+        return;
+      }
+
+      const text = elements.message.value.trim();
+      if (!text) {
+        log("消息不能为空。");
+        return;
+      }
+
+      try {
+        await unlockAudioPlayback();
+        await room.localParticipant.sendText(text, { topic: "lk.chat" });
+        chat(`text from you: ${text}`);
+        elements.message.value = "";
+      } catch (error) {
+        log(`send text failed: ${error?.message || error}`);
+      }
+    }
+
+    elements.connectBtn.addEventListener("click", connectRoom);
+    elements.disconnectBtn.addEventListener("click", disconnectRoom);
+    elements.micBtn.addEventListener("click", enableMic);
+    elements.sendBtn.addEventListener("click", sendMessage);
+    updateUi();
+    log("页面已加载。先启动 agent，再填 token 连接。");
+  </script>
+</body>
+</html>
