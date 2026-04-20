@@ -1,4 +1,4 @@
-# Echuu Agent Local README
+﻿# livekit-agent
 
 这份文档用于本机调试 `echuu` 的 LiveKit Agent，覆盖以下内容：
 
@@ -80,7 +80,7 @@ ws://127.0.0.1:7880
 进入 `agent` 目录：
 
 ```powershell
-cd D:\python\echuu-agent\agent
+cd D:\\python\\livekit-agent\\agent
 ```
 
 安装依赖：
@@ -127,7 +127,7 @@ CARTESIA_API_KEY=your_cartesia_api_key
 进入 `agent` 目录：
 
 ```powershell
-cd D:\python\echuu-agent\agent
+cd D:\\python\\livekit-agent\\agent
 ```
 
 开发模式启动：
@@ -152,7 +152,7 @@ ws://127.0.0.1:7880
 在 `agent` 目录执行：
 
 ```powershell
-cd D:\python\echuu-agent\agent
+cd D:\\python\\livekit-agent\\agent
 python -m http.server 8010
 ```
 
@@ -177,7 +177,7 @@ http://127.0.0.1:8010/test-client.html
 ### 8.2 生成普通用户 token
 
 ```powershell
-cd D:\python\echuu-agent\agent
+cd D:\\python\\livekit-agent\\agent
 @'
 from datetime import timedelta
 from livekit import api
@@ -210,7 +210,7 @@ print("TOKEN=" + token)
 把 `room_name` 改成一个新的名字，每次测试都换一个：
 
 ```powershell
-cd D:\python\echuu-agent\agent
+cd D:\\python\\livekit-agent\\agent
 @'
 from datetime import timedelta
 from livekit import api
@@ -373,21 +373,21 @@ uv run python src\agent.py
 ### 11.1 安装依赖
 
 ```powershell
-cd D:\python\echuu-agent\agent
+cd D:\\python\\livekit-agent\\agent
 uv sync
 ```
 
 ### 11.2 启动 agent
 
 ```powershell
-cd D:\python\echuu-agent\agent
+cd D:\\python\\livekit-agent\\agent
 uv run python src\agent.py dev
 ```
 
 ### 11.3 启动测试页
 
 ```powershell
-cd D:\python\echuu-agent\agent
+cd D:\\python\\livekit-agent\\agent
 python -m http.server 8010
 ```
 
@@ -411,3 +411,4 @@ http://127.0.0.1:8010/test-client.html
 - 发一句 `你好，请语音回答我`
 
 如果页面能听到 agent 说话，这条链路就算全部跑通。
+
