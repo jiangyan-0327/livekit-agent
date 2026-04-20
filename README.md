@@ -1,6 +1,6 @@
 ﻿# livekit-agent
 
-这份文档用于本机调试 `echuu` 的 LiveKit Agent，覆盖以下内容：
+这份文档用于本机调试 LiveKit Agent，覆盖以下内容：
 
 - 安装本机 LiveKit
 - 启动本机 LiveKit
